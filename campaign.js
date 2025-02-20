@@ -1,6 +1,7 @@
-// window.onload = function() {
-//     localStorage.clear();
-// };
+const GITHUB_TOKEN = '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';
+const REPO_OWNER = 'strike7811';
+const REPO_NAME = 'Sooka-Operational-Dashboard';
+const FILE_PATH = 'campaigns.json';
 
 function setStatusStyle(status) {
     const statusClasses = {
@@ -22,38 +23,81 @@ function createTableRow(data) {
         <td><span class="${setStatusStyle(data.status)} status-cell">${data.status}</span></td>
         <td>
             <button class="edit-button" onclick="editRecord('${data.campaignName}')">
-                <img src="edit-button.png" alt="Edit" class="icon" style="width: 20px; height: 20px;">
+                <img src="Images/edit-button.png" alt="Edit" class="icon" style="width: 20px; height: 20px;">
             </button>
             <button class="delete-button" onclick="deleteRecord('${data.campaignName}')">
-                <img src="delete.png" alt="Delete" class="icon" style="width: 20px; height: 20px;">
+                <img src="Images/delete.png" alt="Delete" class="icon" style="width: 20px; height: 20px;">
             </button>
         </td>
     `;
     return row;
 }
 
+function fetchCampaigns() {
+    fetch(`https://api.github.com/repos/${strike7811}/${Sooka-Operational-Dashboard}/contents/${campaigns.json}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `token ${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}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const campaigns = data.content ? JSON.parse(atob(data.content)) : [];
+        campaigns.forEach(campaign => {
+            const row = createTableRow(campaign);
+            document.getElementById('tableBody').appendChild(row);
+        });
+    })
+    .catch(error => console.error('Error fetching campaigns:', error));
+}
+
 function addNewRecord(formData) {
-    let campaigns = JSON.parse(localStorage.getItem('campaigns')) || [];
-    
-    const campaignId = document.getElementById('editCampaignId').value;
-    if (campaignId) {
-        campaigns = campaigns.map(campaign => 
-            campaign.id === parseInt(campaignId) ? { ...campaign, ...formData } : campaign
-        );
-    } else {
-        const newCampaign = {
-            id: Date.now(),
-            ...formData
-        };
-        campaigns.push(newCampaign);
-    }
-    
-    localStorage.setItem('campaigns', JSON.stringify(campaigns));
-    updateTableFromStorage();
-    
-    setTimeout(() => {
-        location.reload();
-    }, 100);
+    fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `token ${GITHUB_TOKEN}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const campaigns = data.content ? JSON.parse(atob(data.content)) : [];
+        const campaignId = document.getElementById('editCampaignId').value;
+
+        if (campaignId) {
+            campaigns = campaigns.map(campaign => 
+                campaign.id === parseInt(campaignId) ? { ...campaign, ...formData } : campaign
+            );
+        } else {
+            const newCampaign = {
+                id: Date.now(),
+                ...formData
+            };
+            campaigns.push(newCampaign);
+        }
+
+        const updatedContent = btoa(JSON.stringify(campaigns));
+        const sha = data.sha;
+
+        fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: 'Update campaigns',
+                content: updatedContent,
+                sha: sha
+            })
+        })
+        .then(() => {
+            updateTableFromStorage();
+            setTimeout(() => {
+                location.reload();
+            }, 100);
+        });
+    })
+    .catch(error => console.error('Error updating campaigns:', error));
 }
 
 const modal = document.getElementById('addRecordModal');
