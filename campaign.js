@@ -23,10 +23,10 @@ function createTableRow(data) {
         <td><span class="${setStatusStyle(data.status)}">${data.status}</span></td>
         <td>
             <button class="edit-button" onclick="editRecord('${data.campaignName}')">
-                <img src="Images/edit-button.png" alt="Edit" class="icon" style="width: 20px; height: 20px;">
+                <img src="edit-button.png" alt="Edit" class="icon" style="width: 20px; height: 20px;">
             </button>
             <button class="delete-button" onclick="deleteRecord('${data.campaignName}')">
-                <img src="Images/delete.png" alt="Delete" class="icon" style="width: 20px; height: 20px;">
+                <img src="delete.png" alt="Delete" class="icon" style="width: 20px; height: 20px;">
             </button>
         </td>
     `;
