@@ -52,10 +52,10 @@ function fetchCampaigns() {
 }
 
 function addNewRecord(formData) {
-    fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+    fetch(`https://api.github.com/repos/${strike7811}/${Sooka-Operational-Dashboard}/contents/${campaigns.json}`, {
         method: 'GET',
         headers: {
-            'Authorization': `token ${GITHUB_TOKEN}`
+            'Authorization': `token ${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}`
         }
     })
     .then(response => response.json())
@@ -78,10 +78,10 @@ function addNewRecord(formData) {
         const updatedContent = btoa(JSON.stringify(campaigns));
         const sha = data.sha;
 
-        fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+        fetch(`https://api.github.com/repos/${strike7811}/${Sooka-Operational-Dashboard}/contents/${campaigns.json}`, {
             method: 'PUT',
             headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Authorization': `token ${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}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
