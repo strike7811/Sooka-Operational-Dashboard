@@ -20,7 +20,7 @@ function createTableRow(data) {
         <td>${data.startDate}</td>
         <td>${data.endDate}</td>
         <td>${data.description || 'No description provided'}</td>
-        <td><span class="${setStatusStyle(data.status)} status-cell">${data.status}</span></td>
+        <td><span class="${setStatusStyle(data.status)}">${data.status}</span></td>
         <td>
             <button class="edit-button" onclick="editRecord('${data.campaignName}')">
                 <img src="Images/edit-button.png" alt="Edit" class="icon" style="width: 20px; height: 20px;">
@@ -34,10 +34,10 @@ function createTableRow(data) {
 }
 
 function fetchCampaigns() {
-    fetch(`https://api.github.com/repos/${strike7811}/${Sooka-Operational-Dashboard}/contents/${campaigns.json}`, {
+    fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
         method: 'GET',
         headers: {
-            'Authorization': `token ${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}`
+            'Authorization': `token ${GITHUB_TOKEN}`
         }
     })
     .then(response => response.json())
@@ -52,15 +52,15 @@ function fetchCampaigns() {
 }
 
 function addNewRecord(formData) {
-    fetch(`https://api.github.com/repos/${strike7811}/${Sooka-Operational-Dashboard}/contents/${campaigns.json}`, {
+    fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
         method: 'GET',
         headers: {
-            'Authorization': `token ${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}`
+            'Authorization': `token ${GITHUB_TOKEN}`
         }
     })
     .then(response => response.json())
     .then(data => {
-        const campaigns = data.content ? JSON.parse(atob(data.content)) : [];
+        let campaigns = data.content ? JSON.parse(atob(data.content)) : [];
         const campaignId = document.getElementById('editCampaignId').value;
 
         if (campaignId) {
@@ -78,10 +78,10 @@ function addNewRecord(formData) {
         const updatedContent = btoa(JSON.stringify(campaigns));
         const sha = data.sha;
 
-        fetch(`https://api.github.com/repos/${strike7811}/${Sooka-Operational-Dashboard}/contents/${campaigns.json}`, {
+        fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
             method: 'PUT',
             headers: {
-                'Authorization': `token ${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}`,
+                'Authorization': `token ${GITHUB_TOKEN}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -226,7 +226,7 @@ function updateTableFromStorage() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    updateTableFromStorage();
+    fetchCampaigns();
     
     document.getElementById('searchInput').addEventListener('input', function() {
         currentPage = 1;
