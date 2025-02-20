@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="layout.css">
+    <link rel="stylesheet" href="refund.css">
+
+    <script src="layout.js" defer></script>
+    <script src="refund.js" defer></script>
+
+    <title>Sooka Operation Dashboard</title>
+</head>
+<body>
+    <div class="Header">
+        <header>
+            <div class="header-container">
+                <div class="header-content">
+                    <div class="navigation-button">
+                        <span class="toggle-btn" onclick="toggleNav()">☰</span>
+                    </div>
+                    <div class="logo-title">
+                        <img src="Images/sooka.png" alt="Sooka Logo">
+                        <h1>Sooka Operation Dashboard</h1>
+                    </div>
+                    <div class="header-controls">
+                        <div class="dark-mode-button" onclick="darkMode()">
+                            <img id="mode-icon" src="Images/night-mode.png" alt="Night Mode">
+                        </div>
+                        <div class="notification-button">
+                            <img id="bell-icon" src="Images/bell.png" alt="Notification">
+                            <div id="notification-panel" class="notification-panel" style="display: none;">
+                                <div class="notification-header">
+                                    <h4>Events</h4>
+                                </div>
+                                <div class="notification-content">
+                                </div>
+                            </div>
+                        </div>
+                        <a href="setting.html" class="settings-button">
+                            <img id="settings-icon" src="Images/settings.png" alt="Settings">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </div>
+    
+    <!-- Sidebar Navigation (Initially Visible) -->
+    <div id="side_nav" class="sidenav">
+        <nav>
+            <a href="index.html">Dashboard</a>
+            <a href="asset.html">Asset Inventory</a>
+            <a href="campaign.html">Campaign</a>
+            <a href="refund.html">Refunds</a>
+            <a href="zendesk.html">Zendesk Issues</a>
+            <a href="setting.html">Setting</a>
+        </nav>
+    </div>   
+    
+    <div class="content">
+        <h2>Refund Management</h2>
+        <div class="status-container">
+            <div class="status-box total">
+                <div class="content-wrapper">
+                    <p class="count">0</p>
+                    <h3>Total Requests</h3>
+                </div>
+                <div class="icon">
+                    <img src="Images/document.png" alt="Total">
+                </div>
+            </div>
+            <div class="status-box pending">
+                <div class="content-wrapper">
+                    <p class="count">0</p>
+                    <h3>Pending</h3>
+                </div>
+                <div class="icon">
+                    <img src="Images/pending.png" alt="Pending">
+                </div>
+            </div>
+            <div class="status-box completed">
+                <div class="content-wrapper">
+                    <p class="count">0</p>
+                    <h3>Completed</h3>
+                </div>
+                <div class="icon">
+                    <img src="Images/completed.png" alt="Completed">
+                </div>
+            </div>
+            <div class="status-box rejected">
+                <div class="content-wrapper">
+                    <p class="count">0</p>
+                    <h3>Rejected</h3>
+                </div>
+                <div class="icon">
+                    <img src="Images/rejected.png" alt="Rejected">
+                </div>
+            </div>
+        </div>
+        
+        <div class="filter-container">
+            <div class="search-section">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search by Customer Name or Email">
+                    <button type="button">
+                        <img src="Images/search.png" alt="Search">
+                    </button>
+                </div>
+                <div class="status-filter">
+                    <select>
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="completed">Completed</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
+            <div class="add-record">
+                <button type="button" class="add-button">
+                    <img src="Images/add.png" alt="Add">
+                    Add New Record
+                </button>
+            </div>
+        </div>
+        
+        <div class="records-container">
+            <div class="record-box">
+                <div class="record-header">
+                    <h3>John Smith</h3>
+                    <div class="status-tag pending">Pending</div>
+                </div>
+                <div class="record-details">
+                    <h4>Email:</h4>
+                    <p>john.smith@email.com</p>
+                    <h4>Date:</h4>
+                    <p>2024-03-20</p>
+                    <h4>Issue:</h4>
+                    <p>Payment failed but amount deducted</p>
+                </div>
+                <div class="record-zendesk">
+                    <p>Zendesk #12345</p>
+                </div>
+                <div class="record-amount">
+                    <div class="amount-label">Refund Amount</div>
+                    <div class="amount-value">RM 29.90</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal" id="recordModal">
+            <div class="modal-content">
+                <h3>Add New Record</h3>
+                <span class="close-btn">&times;</span>
+                <form id="recordForm">
+                    <div class="form-group half">
+                        <label for="customerName">Customer Name</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div class="form-group half">
+                        <label for="customerEmail">Email</label>
+                        <input type="email" id="customerEmail" required>
+                    </div>
+                    <div class="form-group half">
+                        <label for="issueDate">Date</label>
+                        <input type="date" id="issueDate" required>
+                    </div>
+                    <div class="form-group half">
+                        <label for="refundAmount">Refund Amount (RM)</label>
+                        <input type="number" id="refundAmount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="issue">Issue Description</label>
+                        <textarea id="issue" required></textarea>
+                    </div>
+                    <div class="form-group half">
+                        <label for="status">Status</label>
+                        <select id="status" required>
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="form-group half">
+                        <label for="zendesk">Zendesk Ticket ID</label>
+                        <input type="text" id="zendesk-ticket" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn">Cancel</button>
+                        <button type="submit" class="submit-btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

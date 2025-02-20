@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="layout.css">
+    <link rel="stylesheet" href="campaign.css">
+    <script src="layout.js" defer></script>
+    <script src="campaign.js" defer></script>
+    <title>Sooka Operation Dashboard</title>
+</head>
+<body>
+    <div class="Header">
+        <header>
+            <div class="header-container">
+                <div class="header-content">
+                    <div class="navigation-button">
+                        <span class="toggle-btn" onclick="toggleNav()">☰</span>
+                    </div>
+                    <div class="logo-title">
+                        <img src="Images/sooka.png" alt="Sooka Logo">
+                        <h1>Sooka Operation Dashboard</h1>
+                    </div>
+                    <div class="header-controls">
+                        <div class="dark-mode-button" onclick="darkMode()">
+                            <img id="mode-icon" src="Images/night-mode.png" alt="Night Mode">
+                        </div>
+                        <div class="notification-button">
+                            <img id="bell-icon" src="Images/bell.png" alt="Notification">
+                            <div id="notification-panel" class="notification-panel" style="display: none;">
+                                <div class="notification-header">
+                                    <h4>Events</h4>
+                                </div>
+                                <div class="notification-content">
+                                </div>
+                            </div>
+                        </div>
+                        <a href="setting.html" class="settings-button">
+                            <img id="settings-icon" src="Images/settings.png" alt="Settings">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </div>
+    
+    <div id="side_nav" class="sidenav">
+        <nav>
+            <a href="index.html">Dashboard</a>
+            <a href="asset.html">Asset Inventory</a>
+            <a href="campaign.html">Campaign</a>
+            <a href="refund.html">Refunds</a>
+            <a href="zendesk.html">Zendesk Issues</a>
+            <a href="setting.html">Setting</a>
+        </nav>
+    </div>
+    
+    <div class="content">
+        <h2>Campaign</h2>
+        <div class="table-controls">
+            <div class="search-section">
+                <div class="status-filter">
+                    <select id="statusFilter">
+                        <option value="all">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Expired">Expired</option>
+                    </select>
+                </div>
+            </div>
+            <div class="right-controls">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search by Campaign Name">
+                    <button type="button">
+                        <img src="Images/search.png" alt="Search">
+                    </button>
+                </div>
+                <button type="button" id="downloadCsvBtn">Export as CSV</button>
+                <div class="add-record-button">
+                    <button type="button" id="addRecordBtn">Add New Record</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="addRecordModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>Add New Campaign</h3>
+                <form id="campaignForm">
+                    <div class="form-group">
+                        <label for="campaignName">Campaign Name:</label>
+                        <input type="text" id="campaignName" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">End Date:</label>
+                        <input type="date" id="endDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <input type="text" id="description" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status:</label>
+                        <select id="status" required>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Expired">Expired</option>
+                        </select>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="button" class="cancel-btn" id="cancelBtn">Cancel</button>
+                        <button type="submit">Add Campaign</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="campaign-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Campaign Name</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+            <div class="pagination">
+                <button id="prevPage" class="page-btn" onclick="changePage(-1)">
+                    <img src="Images/left.png" alt="Previous">
+                </button>
+                <span id="pageInfo">Page <span id="currentPage">1</span> of <span id="totalPages">1</span></span>
+                <button id="nextPage" class="page-btn" onclick="changePage(1)">
+                    <img src="Images/next.png" alt="Next">
+                </button>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="editCampaignId" value="">
+</body>
+</html>

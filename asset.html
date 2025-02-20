@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="layout.css">
+    <link rel="stylesheet" href="asset.css">
+    <script src="layout.js" defer></script>
+    <script src="asset.js" defer></script>
+    <title>Sooka Operation Dashboard</title>
+</head>
+<body>
+    <div class="Header">
+        <header>
+            <div class="header-container">
+                <div class="header-content">
+                    <div class="navigation-button">
+                        <span class="toggle-btn" onclick="toggleNav()">☰</span>
+                    </div>
+                    <div class="logo-title">
+                        <img src="Images/sooka.png" alt="Sooka Logo">
+                        <h1>Sooka Operation Dashboard</h1>
+                    </div>
+                    <div class="header-controls">
+                        <div class="dark-mode-button" onclick="darkMode()">
+                            <img id="mode-icon" src="Images/night-mode.png" alt="Night Mode">
+                        </div>
+                        <div class="notification-button">
+                            <img id="bell-icon" src="Images/bell.png" alt="Notification">
+                            <div id="notification-panel" class="notification-panel" style="display: none;">
+                                <div class="notification-header">
+                                    <h4>Events</h4>
+                                </div>
+                                <div class="notification-content">
+                                </div>
+                            </div>
+                        </div>
+                        <a href="setting.html" class="settings-button">
+                            <img id="settings-icon" src="Images/settings.png" alt="Settings">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </div>
+    
+    <!-- Sidebar Navigation (Initially Visible) -->
+    <div id="side_nav" class="sidenav">
+        <nav>
+            <a href="index.html">Dashboard</a>
+            <a href="asset.html">Asset Inventory</a>
+            <a href="campaign.html">Campaign</a>
+            <a href="refund.html">Refunds</a>
+            <a href="zendesk.html">Zendesk Issues</a>
+            <a href="setting.html">Setting</a>
+        </nav>
+    </div>
+
+    <div class="content">
+        <h2>Asset Inventory</h2>
+        <div class="table-controls">
+            <select class="department" id="departmentSelect" onchange="handleDepartmentChange()">
+                <option value="Content Right Tracker">Content Right Tracker</option>
+                <option value="Ads Operation">Ads Operation</option>
+                <option value="MCMC">MCMC</option>
+            </select>
+            <div class="add-record-button">
+                <button id="addRecordBtn">Add New Record</button>
+            </div>
+        </div>
+        <div class="asset-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Channel List</th>
+                        <th>Status</th>
+                        <th>VOD Assets</th>
+                        <th>Sooka VOD Package</th>
+                        <th>Provider Content</th>
+                        <th>Sooka Linear EPG</th>
+                        <th>Sooka Linear Poster</th>
+                        <th>Sooka Linear Playback</th>
+                        <th>Maxis Linear EPG</th>
+                        <th>Maxis Linear Poster</th>
+                        <th>Maxis Linear Playback</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td>Channel 1</td>
+                        <td>Active</td>
+                        <td>20</td>
+                        <td>Premium Package</td>
+                        <td>Provider A</td>
+                        <td>Available</td>
+                        <td>Updated</td>
+                        <td>Enabled</td>
+                        <td>Available</td>
+                        <td>Updated</td>
+                        <td>Enabled</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination-container">
+            <div class="pagination">
+                <button id="prevPage" class="page-btn">
+                    <img src="Images/left.png" alt="Previous">
+                </button>
+                <span id="pageInfo">Page <span id="currentPage">1</span> of <span id="totalPages">1</span></span>
+                <button id="nextPage" class="page-btn">
+                    <img src="Images/next.png" alt="Next">
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="addRecordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Record</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="recordForm" autocomplete="off">
+                <div class="form-sections">
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="basic-info-grid">
+                            <div class="form-group">
+                                <label for="channelList">Channel List</label>
+                                <input type="text" id="channelList" autocomplete="off" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="status">Status</label>
+                                <select id="status" required>
+                                    <option value="">Select Status</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="vodAssets">VOD Assets</label>
+                                <input type="number" id="vodAssets" autocomplete="off" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="vodPackage">Sooka VOD Package</label>
+                                <input type="text" id="vodPackage" autocomplete="off" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Sooka Linear Details</h3>
+                        <div class="form-group">
+                            <label for="linearEPG">Linear EPG</label>
+                            <input type="text" id="linearEPG" autocomplete="off" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="linearPoster">Linear Poster</label>
+                            <input type="text" id="linearPoster" autocomplete="off" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="linearPlayback">Linear Playback</label>
+                            <input type="text" id="linearPlayback" autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Maxis Linear Details</h3>
+                        <div class="form-group">
+                            <label for="maxisLinearEPG">Maxis Linear EPG</label>
+                            <input type="text" id="maxisLinearEPG" autocomplete="off" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="maxisLinearPoster">Maxis Linear Poster</label>
+                            <input type="text" id="maxisLinearPoster" autocomplete="off" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="maxisLinearPlayback">Maxis Linear Playback</label>
+                            <input type="text" id="maxisLinearPlayback" autocomplete="off" required>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel">Cancel</button>
+                <button type="submit" form="recordForm" class="btn-submit">Add Record</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
