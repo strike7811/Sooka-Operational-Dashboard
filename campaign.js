@@ -1,4 +1,4 @@
-const GITHUB_TOKEN = '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';
+const GITHUB_TOKEN = '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';
 const REPO_OWNER = 'strike7811';
 const REPO_NAME = 'Sooka-Operational-Dashboard';
 const FILE_PATH = 'campaigns.json';
