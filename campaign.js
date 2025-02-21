@@ -23,10 +23,10 @@ function createTableRow(data) {
         <td><span class="${setStatusStyle(data.status)}">${data.status}</span></td>
         <td>
             <button class="edit-button" onclick="editRecord('${data.campaignName}')">
-                <img src="edit-button.png" alt="Edit" class="icon" style="width: 20px; height: 20px;">
+                <img src="Images/edit-button.png" alt="Edit" class="icon" style="width: 20px; height: 20px;">
             </button>
             <button class="delete-button" onclick="deleteRecord('${data.campaignName}')">
-                <img src="delete.png" alt="Delete" class="icon" style="width: 20px; height: 20px;">
+                <img src="Images/delete.png" alt="Delete" class="icon" style="width: 20px; height: 20px;">
             </button>
         </td>
     `;
@@ -40,15 +40,33 @@ function fetchCampaigns() {
             'Authorization': `token ${GITHUB_TOKEN}`
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
         const campaigns = data.content ? JSON.parse(atob(data.content)) : [];
-        campaigns.forEach(campaign => {
-            const row = createTableRow(campaign);
-            document.getElementById('tableBody').appendChild(row);
-        });
+        const tableBody = document.getElementById('tableBody');
+        tableBody.innerHTML = '';
+
+        if (campaigns.length === 0) {
+            const noRecordsRow = document.createElement('tr');
+            noRecordsRow.innerHTML = '<td colspan="6" style="text-align: center;">Record not found</td>';
+            tableBody.appendChild(noRecordsRow);
+        } else {
+            campaigns.forEach(campaign => {
+                const row = createTableRow(campaign);
+                tableBody.appendChild(row);
+            });
+        }
     })
-    .catch(error => console.error('Error fetching campaigns:', error));
+    .catch(error => {
+        console.error('Error fetching campaigns:', error);
+        const tableBody = document.getElementById('tableBody');
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Cannot load the record</td></tr>';
+    });
 }
 
 function addNewRecord(formData) {
@@ -91,13 +109,11 @@ function addNewRecord(formData) {
             })
         })
         .then(() => {
-            updateTableFromStorage();
-            setTimeout(() => {
-                location.reload();
-            }, 100);
-        });
+            fetchCampaigns();
+        })
+        .catch(error => console.error('Error updating campaigns:', error));
     })
-    .catch(error => console.error('Error updating campaigns:', error));
+    .catch(error => console.error('Error fetching campaigns:', error));
 }
 
 const modal = document.getElementById('addRecordModal');
@@ -131,8 +147,9 @@ document.getElementById('campaignForm').addEventListener('submit', function(e) {
         description: document.getElementById('description').value,
         status: document.getElementById('status').value
     };
-    
-    console.log(formData);
+
+    console.log('Form Data:', formData);
+
     addNewRecord(formData);
     modal.style.display = "none";
     this.reset();
@@ -310,19 +327,49 @@ function editRecord(campaignName) {
 }
 
 function deleteRecord(campaignName) {
-    let campaigns = JSON.parse(localStorage.getItem('campaigns')) || [];
-    campaigns = campaigns.filter(campaign => campaign.campaignName !== campaignName);
-    
-    localStorage.setItem('campaigns', JSON.stringify(campaigns));
-    updateTableFromStorage();
+    fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `token ${GITHUB_TOKEN}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        let campaigns = data.content ? JSON.parse(atob(data.content)) : [];
+        campaigns = campaigns.filter(campaign => campaign.campaignName !== campaignName);
+        
+        const updatedContent = btoa(JSON.stringify(campaigns));
+        const sha = data.sha;
+
+        fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: 'Delete campaign',
+                content: updatedContent,
+                sha: sha
+            })
+        })
+        .then(() => {
+            fetchCampaigns(); // 重新获取并显示数据
+        })
+        .catch(error => console.error('Error deleting campaign:', error));
+    })
+    .catch(error => console.error('Error fetching campaigns:', error));
 }
 
 function downloadCSV() {
     const tableBody = document.getElementById("tableBody");
     const rows = Array.from(tableBody.querySelectorAll("tr"));
 
-    const columnNames = "Campaign Name,Start Date,End Date,Description,Status";
+    if (rows.length === 0) {
+        return;
+    }
 
+    const columnNames = "Campaign Name,Start Date,End Date,Description,Status";
     const csvContent = columnNames + "\n"
         + rows.map(row => 
             Array.from(row.cells)
