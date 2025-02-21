@@ -18,10 +18,10 @@ function createTableRow(data) {
         <td><span class="${setStatusStyle(data.status)}">${data.status}</span></td>
         <td>
             <button class="edit-button" onclick="editRecord('${data.campaignName}')">
-                <img src="edit-button.png" alt="Edit" class="icon" style="width: 20px; height: 20px;">
+                <img src="Images/edit-button.png" alt="Edit" class="icon" style="width: 20px; height: 20px;">
             </button>
             <button class="delete-button" onclick="deleteRecord('${data.campaignName}')">
-                <img src="delete.png" alt="Delete" class="icon" style="width: 20px; height: 20px;">
+                <img src="Images/delete.png" alt="Delete" class="icon" style="width: 20px; height: 20px;">
             </button>
         </td>
     `;
@@ -43,19 +43,9 @@ function fetchCampaigns() {
     })
     .then(data => {
         const campaigns = data.content ? JSON.parse(atob(data.content)) : [];
-        const tableBody = document.getElementById('tableBody');
-        tableBody.innerHTML = '';
-
-        if (campaigns.length === 0) {
-            const noRecordsRow = document.createElement('tr');
-            noRecordsRow.innerHTML = '<td colspan="6" style="text-align: center;">Record not found</td>';
-            tableBody.appendChild(noRecordsRow);
-        } else {
-            campaigns.forEach(campaign => {
-                const row = createTableRow(campaign);
-                tableBody.appendChild(row);
-            });
-        }
+        localStorage.setItem('campaigns', JSON.stringify(campaigns));
+        updateTableFromStorage();
+        updatePagination();
     })
     .catch(error => {
         console.error('Error fetching campaigns:', error);
@@ -106,11 +96,14 @@ function addNewRecord(formData) {
         
         if (editingCampaign) {
             campaigns = campaigns.map(campaign => 
-                campaign.campaignName === editingCampaign ? {...campaign, ...formData} : campaign
+                campaign.campaignName === editingCampaign ? 
+                    {...campaign, ...formData, timestamp: campaign.timestamp} :
+                    campaign
             );
             document.getElementById('campaignForm').removeAttribute('data-editing');
             document.querySelector('#campaignForm button[type="submit"]').textContent = 'Add Record';
         } else {
+            formData.timestamp = Date.now();
             campaigns.push(formData);
         }
 
@@ -207,16 +200,17 @@ document.getElementById('searchInput').addEventListener('input', function() {
 });
 
 let currentPage = 1;
-const recordsPerPage = 8;
+const recordsPerPage = 9;
 
 function updatePagination() {
     const campaigns = JSON.parse(localStorage.getItem('campaigns')) || [];
     const totalPages = Math.ceil(campaigns.length / recordsPerPage);
-    document.getElementById('totalPages').textContent = totalPages;
+    
+    document.getElementById('totalPages').textContent = totalPages || 1;
     document.getElementById('currentPage').textContent = currentPage;
 
     document.getElementById('prevPage').disabled = currentPage === 1;
-    document.getElementById('nextPage').disabled = currentPage === totalPages;
+    document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
 }
 
 function changePage(direction) {
@@ -235,7 +229,7 @@ function updateTableFromStorage() {
     const tableBody = document.getElementById('tableBody');
     let campaigns = JSON.parse(localStorage.getItem('campaigns')) || [];
     
-    campaigns.sort((a, b) => b.id - a.id);
+    campaigns.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     
     tableBody.innerHTML = '';
 
@@ -243,10 +237,16 @@ function updateTableFromStorage() {
     const end = start + recordsPerPage;
     const paginatedCampaigns = campaigns.slice(start, end);
 
-    paginatedCampaigns.forEach(campaign => {
-        const row = createTableRow(campaign);
-        tableBody.appendChild(row);
-    });
+    if (paginatedCampaigns.length === 0) {
+        const noRecordsRow = document.createElement('tr');
+        noRecordsRow.innerHTML = '<td colspan="6" style="text-align: center;">Record not found</td>';
+        tableBody.appendChild(noRecordsRow);
+    } else {
+        paginatedCampaigns.forEach(campaign => {
+            const row = createTableRow(campaign);
+            tableBody.appendChild(row);
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -261,6 +261,9 @@ document.addEventListener('DOMContentLoaded', function() {
         currentPage = 1;
         filterCampaigns();
     });
+
+    document.getElementById('prevPage').addEventListener('click', () => changePage(-1));
+    document.getElementById('nextPage').addEventListener('click', () => changePage(1));
 });
 
 function filterTable(searchTerm, status) {

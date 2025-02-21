@@ -20,15 +20,15 @@
                         <span class="toggle-btn" onclick="toggleNav()">☰</span>
                     </div>
                     <div class="logo-title">
-                        <img src="sooka.png" alt="Sooka Logo">
+                        <img src="Images/sooka.png" alt="Sooka Logo">
                         <h1>Sooka Operation Dashboard</h1>
                     </div>
                     <div class="header-controls">
                         <div class="dark-mode-button" onclick="darkMode()">
-                            <img id="mode-icon" src="night-mode.png" alt="Night Mode">
+                            <img id="mode-icon" src="Images/night-mode.png" alt="Night Mode">
                         </div>
                         <div class="notification-button">
-                            <img id="bell-icon" src="bell.png" alt="Notification">
+                            <img id="bell-icon" src="Images/bell.png" alt="Notification">
                             <div id="notification-panel" class="notification-panel" style="display: none;">
                                 <div class="notification-header">
                                     <h4>Events</h4>
@@ -38,7 +38,7 @@
                             </div>
                         </div>
                         <a href="setting.html" class="settings-button">
-                            <img id="settings-icon" src="settings.png" alt="Settings">
+                            <img id="settings-icon" src="Images/settings.png" alt="Settings">
                         </a>
                     </div>
                 </div>
@@ -67,7 +67,7 @@
                     <h3>Total Requests</h3>
                 </div>
                 <div class="icon">
-                    <img src="document.png" alt="Total">
+                    <img src="Images/document.png" alt="Total">
                 </div>
             </div>
             <div class="status-box pending">
@@ -76,7 +76,7 @@
                     <h3>Pending</h3>
                 </div>
                 <div class="icon">
-                    <img src="pending.png" alt="Pending">
+                    <img src="Images/pending.png" alt="Pending">
                 </div>
             </div>
             <div class="status-box completed">
@@ -85,7 +85,7 @@
                     <h3>Completed</h3>
                 </div>
                 <div class="icon">
-                    <img src="completed.png" alt="Completed">
+                    <img src="Images/completed.png" alt="Completed">
                 </div>
             </div>
             <div class="status-box rejected">
@@ -94,7 +94,7 @@
                     <h3>Rejected</h3>
                 </div>
                 <div class="icon">
-                    <img src="rejected.png" alt="Rejected">
+                    <img src="Images/rejected.png" alt="Rejected">
                 </div>
             </div>
         </div>
@@ -104,7 +104,7 @@
                 <div class="search-bar">
                     <input type="text" placeholder="Search by Customer Name or Email">
                     <button type="button">
-                        <img src="search.png" alt="Search">
+                        <img src="Images/search.png" alt="Search">
                     </button>
                 </div>
                 <div class="status-filter">
@@ -116,36 +116,25 @@
                     </select>
                 </div>
             </div>
+            <div class="pagination-controls">
+                <button class="page-btn prev-btn" disabled>
+                    <img src="Images/left.png" alt="Previous">
+                </button>
+                <span class="page-info">Page <span class="current-page">1</span></span>
+                <button class="page-btn next-btn" disabled>
+                    <img src="Images/next.png" alt="Next">
+                </button>
+            </div>
             <div class="add-record">
                 <button type="button" class="add-button">
-                    <img src="add.png" alt="Add">
+                    <img src="Images/add.png" alt="Add">
                     Add New Record
                 </button>
             </div>
         </div>
         
         <div class="records-container">
-            <div class="record-box">
-                <div class="record-header">
-                    <h3>John Smith</h3>
-                    <div class="status-tag pending">Pending</div>
-                </div>
-                <div class="record-details">
-                    <h4>Email:</h4>
-                    <p>john.smith@email.com</p>
-                    <h4>Date:</h4>
-                    <p>2024-03-20</p>
-                    <h4>Issue:</h4>
-                    <p>Payment failed but amount deducted</p>
-                </div>
-                <div class="record-zendesk">
-                    <p>Zendesk #12345</p>
-                </div>
-                <div class="record-amount">
-                    <div class="amount-label">Refund Amount</div>
-                    <div class="amount-value">RM 29.90</div>
-                </div>
-            </div>
+
         </div>
         
         <div class="modal" id="recordModal">
