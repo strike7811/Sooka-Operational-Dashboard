@@ -391,4 +391,3 @@ function downloadCSV() {
 }
 
 document.getElementById("downloadCsvBtn").addEventListener("click", downloadCSV);
-
