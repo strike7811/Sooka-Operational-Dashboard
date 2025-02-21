@@ -1,8 +1,3 @@
-const GITHUB_TOKEN = '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';
-const REPO_OWNER = 'strike7811';
-const REPO_NAME = 'Sooka-Operational-Dashboard';
-const FILE_PATH = 'campaigns.json';
-
 function setStatusStyle(status) {
     const statusClasses = {
         'Active': 'status-active',
@@ -42,7 +37,7 @@ function fetchCampaigns() {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
         }
         return response.json();
     })
@@ -65,8 +60,36 @@ function fetchCampaigns() {
     .catch(error => {
         console.error('Error fetching campaigns:', error);
         const tableBody = document.getElementById('tableBody');
-        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Cannot load the record</td></tr>';
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center;">Cannot Load the Record: ${error.message}</td></tr>`;
     });
+}
+
+function editRecord(campaignName) {
+    fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `token ${GITHUB_TOKEN}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const campaigns = JSON.parse(atob(data.content));
+        const campaign = campaigns.find(c => c.campaignName === campaignName);
+        
+        if (campaign) {
+            document.getElementById('campaignName').value = campaign.campaignName;
+            document.getElementById('startDate').value = campaign.startDate;
+            document.getElementById('endDate').value = campaign.endDate;
+            document.getElementById('description').value = campaign.description || '';
+            document.getElementById('status').value = campaign.status;
+            
+            document.getElementById('campaignForm').setAttribute('data-editing', campaignName);
+            document.querySelector('#campaignForm button[type="submit"]').textContent = 'Edit Record';
+            
+            modal.style.display = "block";
+        }
+    })
+    .catch(error => console.error('Error fetching campaign for edit:', error));
 }
 
 function addNewRecord(formData) {
@@ -78,42 +101,40 @@ function addNewRecord(formData) {
     })
     .then(response => response.json())
     .then(data => {
-        let campaigns = data.content ? JSON.parse(atob(data.content)) : [];
-        const campaignId = document.getElementById('editCampaignId').value;
-
-        if (campaignId) {
+        let campaigns = JSON.parse(atob(data.content));
+        const editingCampaign = document.getElementById('campaignForm').getAttribute('data-editing');
+        
+        if (editingCampaign) {
             campaigns = campaigns.map(campaign => 
-                campaign.id === parseInt(campaignId) ? { ...campaign, ...formData } : campaign
+                campaign.campaignName === editingCampaign ? {...campaign, ...formData} : campaign
             );
+            document.getElementById('campaignForm').removeAttribute('data-editing');
+            document.querySelector('#campaignForm button[type="submit"]').textContent = 'Add Record';
         } else {
-            const newCampaign = {
-                id: Date.now(),
-                ...formData
-            };
-            campaigns.push(newCampaign);
+            campaigns.push(formData);
         }
 
         const updatedContent = btoa(JSON.stringify(campaigns));
-        const sha = data.sha;
-
-        fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+        
+        return fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `token ${GITHUB_TOKEN}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                message: 'Update campaigns',
+                message: editingCampaign ? 'Update campaign' : 'Add new campaign',
                 content: updatedContent,
-                sha: sha
+                sha: data.sha
             })
-        })
-        .then(() => {
-            fetchCampaigns();
-        })
-        .catch(error => console.error('Error updating campaigns:', error));
+        });
     })
-    .catch(error => console.error('Error fetching campaigns:', error));
+    .then(() => {
+        fetchCampaigns();
+        modal.style.display = "none";
+        document.getElementById('campaignForm').reset();
+    })
+    .catch(error => console.error('Error updating campaigns:', error));
 }
 
 const modal = document.getElementById('addRecordModal');
@@ -127,8 +148,8 @@ addBtn.onclick = function() {
 closeBtn.onclick = function() {
     modal.style.display = "none";
     document.getElementById('campaignForm').reset();
-    document.getElementById('editCampaignId').value = '';
-    document.querySelector('.form-buttons button[type="submit"]').textContent = 'Add Campaign';
+    document.getElementById('campaignForm').removeAttribute('data-editing');
+    document.querySelector('#campaignForm button[type="submit"]').textContent = 'Add Record';
 }
 
 window.onclick = function(event) {
@@ -148,21 +169,7 @@ document.getElementById('campaignForm').addEventListener('submit', function(e) {
         status: document.getElementById('status').value
     };
 
-    console.log('Form Data:', formData);
-
     addNewRecord(formData);
-    modal.style.display = "none";
-    this.reset();
-    
-    const totalRows = document.querySelectorAll('#tableBody tr').length;
-    currentPage = Math.ceil(totalRows / recordsPerPage);
-    updatePagination();
-    updateNotifications();
-});
-
-document.getElementById('cancelBtn').addEventListener('click', function() {
-    modal.style.display = "none";
-    document.getElementById('campaignForm').reset();
 });
 
 document.getElementById('statusFilter').addEventListener('change', function() {
@@ -309,23 +316,6 @@ function filterRecords() {
     });
 }
 
-function editRecord(campaignName) {
-    const campaigns = JSON.parse(localStorage.getItem('campaigns')) || [];
-    const campaignToEdit = campaigns.find(campaign => campaign.campaignName === campaignName);
-    
-    if (campaignToEdit) {
-        document.getElementById('campaignForm').reset();
-        document.getElementById('campaignName').value = campaignToEdit.campaignName;
-        document.getElementById('startDate').value = campaignToEdit.startDate;
-        document.getElementById('endDate').value = campaignToEdit.endDate;
-        document.getElementById('description').value = campaignToEdit.description;
-        document.getElementById('status').value = campaignToEdit.status;
-        document.getElementById('editCampaignId').value = campaignToEdit.id;
-        document.querySelector('.form-buttons button[type="submit"]').textContent = 'Edit Campaign';
-        modal.style.display = "block";
-    }
-}
-
 function deleteRecord(campaignName) {
     fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
         method: 'GET',
@@ -354,7 +344,7 @@ function deleteRecord(campaignName) {
             })
         })
         .then(() => {
-            fetchCampaigns(); // 重新获取并显示数据
+            fetchCampaigns();
         })
         .catch(error => console.error('Error deleting campaign:', error));
     })
@@ -391,3 +381,4 @@ function downloadCSV() {
 }
 
 document.getElementById("downloadCsvBtn").addEventListener("click", downloadCSV);
+
