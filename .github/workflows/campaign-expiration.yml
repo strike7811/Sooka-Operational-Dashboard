@@ -64,5 +64,5 @@ jobs:
         password: ${{ secrets.EMAIL_PASSWORD }}
         subject: "Campaign Expiration Reminder"
         body_file: "email_body.txt"
-        to: "your-email@gmail.com"
+        to: "kohch7811@gmail.com"
         from: "GitHub Actions"
