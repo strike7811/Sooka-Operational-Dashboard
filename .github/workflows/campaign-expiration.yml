@@ -2,13 +2,14 @@ name: Campaign Expiration Email Notification
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * *'  # Runs once a day at midnight UTC
   workflow_dispatch:
 
 jobs:
   check-campaigns:
     runs-on: ubuntu-latest
     steps:
+    
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -19,13 +20,15 @@ jobs:
 
     - name: Generate Email Body
       run: |
-        node <<EOF
+        cat << 'EOF' > generate_email.js
         const fs = require('fs');
 
+        // Read campaign data
         const campaignData = JSON.parse(fs.readFileSync('campaign.json', 'utf8'));
         const today = new Date();
         const twoWeeks = 14 * 24 * 60 * 60 * 1000;
 
+        // Filter campaigns expiring in 2 weeks
         const expiringCampaigns = campaignData.filter(campaign => {
           if (campaign.status !== 'Active') return false;
           const endDate = new Date(campaign.endDate);
@@ -33,29 +36,33 @@ jobs:
         });
 
         if (expiringCampaigns.length > 0) {
-          let emailBody = ` [Campaign Expiration Reminder] \n\n`;
-          emailBody += `The following campaigns are about to expire. Please take action:\n\n`;
-          emailBody += `------------------------------------------------\n`;
-          emailBody += `📅 End Date        | 📌 Campaign Name\n`;
-          emailBody += `------------------------------------------------\n`;
+          let emailBody = "[Campaign Expiration Reminder]\n\n";
+          emailBody += "The following campaigns are about to expire. Please take action:\n\n";
+          emailBody += "------------------------------------------------\n";
+          emailBody += "📅 End Date        | 📌 Campaign Name\n";
+          emailBody += "------------------------------------------------\n";
 
           expiringCampaigns.forEach(campaign => {
             const endDate = new Date(campaign.endDate).toISOString().split('T')[0];
             emailBody += `${endDate}       | ${campaign.campaignName}\n`;
           });
 
-          emailBody += `------------------------------------------------\n\n`;
-          emailBody += `⚠️ Please review and decide whether to extend or take necessary actions.\n\n`;
-          emailBody += `GitHub Repository: https://github.com/${{ github.repository }}\n\n`;
-          emailBody += `This is an automated notification from GitHub Actions. Please do not reply.`;
+          emailBody += "------------------------------------------------\n\n";
+          emailBody += "⚠️ Please review and decide whether to extend or take necessary actions.\n\n";
+          emailBody += `GitHub Repository: https://github.com/${process.env.GITHUB_REPOSITORY}\n\n`;
+          emailBody += "This is an automated notification from GitHub Actions. Please do not reply.";
 
           fs.writeFileSync('email_body.txt', emailBody);
         } else {
           console.log("No campaigns are expiring soon.");
+          process.exit(1); // Exit with error so next steps can be skipped
         }
         EOF
 
+        node generate_email.js || exit 0  # Prevents failure if no campaigns are expiring
+
     - name: Send Email Notification
+      if: success()  # Only runs if email_body.txt was generated
       uses: dawidd6/action-send-mail@v3
       with:
         server_address: smtp.gmail.com
