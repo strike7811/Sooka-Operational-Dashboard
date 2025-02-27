@@ -62,10 +62,6 @@ jobs:
         # Run the script
         node generate_email.js
 
-    - name: Read Email Content
-      id: email_body
-      run: echo "EMAIL_BODY=$(cat email_body.txt)" >> $GITHUB_ENV
-
     - name: Send Email Notification
       uses: dawidd6/action-send-mail@v3
       with:
@@ -74,6 +70,6 @@ jobs:
         username: ${{ secrets.EMAIL_USERNAME }}
         password: ${{ secrets.EMAIL_PASSWORD }}
         subject: "Campaign Expiration Reminder"
-        body: ${{ env.EMAIL_BODY }}  # Uses environment variable instead of body_file
+        body: ${{ join(fromJSON('["' + join(toJSON(split(github.event.inputs.email_body, '\n')), '", "') + '"]'), '\n') }}
         to: "kohch7811@gmail.com"
         from: "GitHub Actions"
