@@ -64,10 +64,6 @@ jobs:
         # Run the script to generate email content
         node generate_email.js
 
-    - name: Read Email Body
-      id: read_email
-      run: echo "email_body=$(cat email_body.txt)" >> $GITHUB_ENV
-
     - name: Send Email Notification
       uses: dawidd6/action-send-mail@v3
       with:
@@ -76,6 +72,6 @@ jobs:
         username: ${{ secrets.EMAIL_USERNAME }}
         password: ${{ secrets.EMAIL_PASSWORD }}
         subject: "Campaign Expiration Reminder"
-        body: ${{ env.email_body }}
+        body_file: "email_body.txt"
         to: "kohch7811@gmail.com"
         from: "GitHub Actions"
