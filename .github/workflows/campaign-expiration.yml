@@ -9,7 +9,7 @@ jobs:
   check-campaigns:
     runs-on: ubuntu-latest
     steps:
-
+    
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -20,14 +20,14 @@ jobs:
 
     - name: Generate Email Body
       run: |
-        echo "Generating email content..."
-
-        cat > generate_email.js << 'EOF'
+        cat << 'EOF' > generate_email.js
         const fs = require('fs');
+
+        // Read campaign data
         const campaignData = JSON.parse(fs.readFileSync('campaign.json', 'utf8'));
         const today = new Date();
         const twoWeeks = 14 * 24 * 60 * 60 * 1000;
-        
+
         // Filter campaigns expiring in 2 weeks
         const expiringCampaigns = campaignData.filter(campaign => {
           if (campaign.status !== 'Active') return false;
@@ -41,10 +41,12 @@ jobs:
           emailBody += "------------------------------------------------\n";
           emailBody += "End Date       | Campaign Name\n";
           emailBody += "------------------------------------------------\n";
+
           expiringCampaigns.forEach(campaign => {
             const endDate = new Date(campaign.endDate).toISOString().split('T')[0];
             emailBody += `${endDate}   | ${campaign.campaignName}\n`;
           });
+
           emailBody += "------------------------------------------------\n\n";
           emailBody += "Please review and decide whether to extend or take necessary actions.\n\n";
           emailBody += `GitHub Repository: https://github.com/${process.env.GITHUB_REPOSITORY}\n\n`;
@@ -58,7 +60,11 @@ jobs:
         console.log("Email content generated successfully.");
         EOF
 
-        node generate_email.js
+        # Run the script
+        node generate_email.js || exit 0  # Prevent failure if no campaigns are expiring
+
+    - name: Read Email Content
+      run: echo "EMAIL_BODY=$(cat email_body.txt)" >> $GITHUB_ENV
 
     - name: Send Email Notification
       uses: dawidd6/action-send-mail@v3
@@ -68,6 +74,6 @@ jobs:
         username: ${{ secrets.EMAIL_USERNAME }}
         password: ${{ secrets.EMAIL_PASSWORD }}
         subject: "Campaign Expiration Reminder"
-        body_file: "email_body.txt"
+        body: "${{ env.EMAIL_BODY }}"
         to: "kohch7811@gmail.com"
         from: "GitHub Actions"
