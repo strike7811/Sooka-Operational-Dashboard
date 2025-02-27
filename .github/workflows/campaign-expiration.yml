@@ -9,7 +9,7 @@ jobs:
   check-campaigns:
     runs-on: ubuntu-latest
     steps:
-    
+
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -21,50 +21,42 @@ jobs:
     - name: Generate Email Body
       run: |
         echo "Generating email content..."
-        
-        cat <<EOF > generate_email.js
-        const fs = require('fs');
 
-        // Read campaign data
-        const campaignData = JSON.parse(fs.readFileSync('campaign.json', 'utf8'));
-        const today = new Date();
-        const twoWeeks = 14 * 24 * 60 * 60 * 1000;
+        # Create the JavaScript file safely
+        echo "const fs = require('fs');" > generate_email.js
+        echo "const campaignData = JSON.parse(fs.readFileSync('campaign.json', 'utf8'));" >> generate_email.js
+        echo "const today = new Date();" >> generate_email.js
+        echo "const twoWeeks = 14 * 24 * 60 * 60 * 1000;" >> generate_email.js
+        echo "const expiringCampaigns = campaignData.filter(campaign => {" >> generate_email.js
+        echo "  if (campaign.status !== 'Active') return false;" >> generate_email.js
+        echo "  const endDate = new Date(campaign.endDate);" >> generate_email.js
+        echo "  return endDate.getTime() - today.getTime() <= twoWeeks && endDate.getTime() > today.getTime();" >> generate_email.js
+        echo "});" >> generate_email.js
 
-        // Filter campaigns expiring in 2 weeks
-        const expiringCampaigns = campaignData.filter(campaign => {
-          if (campaign.status !== 'Active') return false;
-          const endDate = new Date(campaign.endDate);
-          return endDate.getTime() - today.getTime() <= twoWeeks && endDate.getTime() > today.getTime();
-        });
+        echo "let emailBody = 'Campaign Expiration Reminder\\n\\n';" >> generate_email.js
+        echo "if (expiringCampaigns.length > 0) {" >> generate_email.js
+        echo "  emailBody += 'The following campaigns are about to expire. Please take action:\\n\\n';" >> generate_email.js
+        echo "  emailBody += '------------------------------------------------\\n';" >> generate_email.js
+        echo "  emailBody += 'End Date       | Campaign Name\\n';" >> generate_email.js
+        echo "  emailBody += '------------------------------------------------\\n';" >> generate_email.js
+        echo "  expiringCampaigns.forEach(campaign => {" >> generate_email.js
+        echo "    const endDate = new Date(campaign.endDate).toISOString().split('T')[0];" >> generate_email.js
+        echo "    emailBody += \`\${endDate}   | \${campaign.campaignName}\\n\`;" >> generate_email.js
+        echo "  });" >> generate_email.js
+        echo "  emailBody += '------------------------------------------------\\n\\n';" >> generate_email.js
+        echo "  emailBody += 'Please review and decide whether to extend or take necessary actions.\\n\\n';" >> generate_email.js
+        echo "  emailBody += \`GitHub Repository: https://github.com/${GITHUB_REPOSITORY}\\n\\n\`;" >> generate_email.js
+        echo "  emailBody += 'This is an automated notification from GitHub Actions. Please do not reply.';" >> generate_email.js
+        echo "} else {" >> generate_email.js
+        echo "  emailBody += 'No campaigns are expiring soon.';" >> generate_email.js
+        echo "}" >> generate_email.js
 
-        let emailBody = "Campaign Expiration Reminder\n\n";
-        if (expiringCampaigns.length > 0) {
-          emailBody += "The following campaigns are about to expire. Please take action:\n\n";
-          emailBody += "------------------------------------------------\n";
-          emailBody += "End Date       | Campaign Name\n";
-          emailBody += "------------------------------------------------\n";
+        echo "fs.writeFileSync('email_body.txt', emailBody);" >> generate_email.js
 
-          expiringCampaigns.forEach(campaign => {
-            const endDate = new Date(campaign.endDate).toISOString().split('T')[0];
-            emailBody += \`\${endDate}   | \${campaign.campaignName}\n\`;
-          });
-
-          emailBody += "------------------------------------------------\n\n";
-          emailBody += "Please review and decide whether to extend or take necessary actions.\n\n";
-          emailBody += \`GitHub Repository: https://github.com/${process.env.GITHUB_REPOSITORY}\n\n\`;
-          emailBody += "This is an automated notification from GitHub Actions. Please do not reply.";
-        } else {
-          emailBody += "No campaigns are expiring soon.";
-        }
-
-        // Write email body to a file
-        fs.writeFileSync('email_body.txt', emailBody);
-        EOF
-
-        # Run the script to generate email content
+        # Run the script to generate the email
         node generate_email.js
 
-        # Store the email body in an environment variable
+        # Store the email body in an environment variable for sending
         echo "EMAIL_BODY<<EOF" >> $GITHUB_ENV
         cat email_body.txt >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
