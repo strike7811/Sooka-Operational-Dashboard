@@ -63,8 +63,8 @@ jobs:
         # Run the script
         node generate_email.js || exit 0  # Prevent failure if no campaigns are expiring
 
-    - name: Read Email Content
-      run: echo "EMAIL_BODY=$(cat email_body.txt)" >> $GITHUB_ENV
+    - name: Encode Email Body
+      run: base64 email_body.txt > email_body.b64
 
     - name: Send Email Notification
       uses: dawidd6/action-send-mail@v3
@@ -74,6 +74,6 @@ jobs:
         username: ${{ secrets.EMAIL_USERNAME }}
         password: ${{ secrets.EMAIL_PASSWORD }}
         subject: "Campaign Expiration Reminder"
-        body: "${{ env.EMAIL_BODY }}"
+        body: ${{ secrets.EMAIL_BODY }}
         to: "kohch7811@gmail.com"
         from: "GitHub Actions"
