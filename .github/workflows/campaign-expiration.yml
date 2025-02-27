@@ -9,7 +9,7 @@ jobs:
   check-campaigns:
     runs-on: ubuntu-latest
     steps:
-    
+
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -20,6 +20,7 @@ jobs:
 
     - name: Generate Email Body
       run: |
+        echo "Generating email content..."
         cat << 'EOF' > generate_email.js
         const fs = require('fs');
 
@@ -55,18 +56,18 @@ jobs:
           emailBody += "No campaigns are expiring soon.";
         }
 
-        // Write email body to file
+        // Write email body to a file
         fs.writeFileSync('email_body.txt', emailBody);
         console.log("Email content generated successfully.");
         EOF
 
-        # Run the script
-        node generate_email.js || exit 0  # Prevent failure if no campaigns are expiring
+        node generate_email.js
 
     - name: Store Email Body in Environment Variable
-      run: echo "EMAIL_BODY=$(cat email_body.txt | base64 -w 0)" >> $GITHUB_ENV
+      run: |
+        echo "EMAIL_BODY=$(cat email_body.txt)" >> $GITHUB_ENV
 
-    - name: Decode and Send Email
+    - name: Send Email Notification
       uses: dawidd6/action-send-mail@v3
       with:
         server_address: smtp.gmail.com
@@ -74,6 +75,6 @@ jobs:
         username: ${{ secrets.EMAIL_USERNAME }}
         password: ${{ secrets.EMAIL_PASSWORD }}
         subject: "Campaign Expiration Reminder"
-        body: ${{ env.EMAIL_BODY }}
         to: "kohch7811@gmail.com"
         from: "GitHub Actions"
+        body: ${{ env.EMAIL_BODY }}
