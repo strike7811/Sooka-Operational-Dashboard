@@ -2,7 +2,7 @@ name: Campaign Expiration Email Notification
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs once a day at midnight UTC
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -66,12 +66,12 @@ jobs:
     - name: Send Email Notification via Outlook
       uses: dawidd6/action-send-mail@v3
       with:
-        server_address: smtp.office365.com  # Outlook SMTP Server
+        server_address: smtp.office365.com
         server_port: 587
-        secure: false  # Use STARTTLS
+        secure: false
         username: ${{ secrets.OUTLOOK_EMAIL }}  # Your Outlook email (e.g., yourname@outlook.com)
         password: ${{ secrets.OUTLOOK_PASSWORD }}  # App password (not regular Outlook password)
         subject: "Campaign Expiration Reminder"
-        to: "kohch7811@outlook.com"  # Change to your Outlook email
+        to: "CHKCHERN@astro.com.my"
         from: "GitHub Actions <${{ secrets.OUTLOOK_EMAIL }}>"
         body: ${{ env.EMAIL_BODY }}
