@@ -9,7 +9,7 @@ jobs:
   check-campaigns:
     runs-on: ubuntu-latest
     steps:
-
+    
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -20,15 +20,13 @@ jobs:
 
     - name: Generate Email Body
       run: |
-        echo "Generating email content..."
         cat << 'EOF' > generate_email.js
         const fs = require('fs');
-
         // Read campaign data
         const campaignData = JSON.parse(fs.readFileSync('campaign.json', 'utf8'));
         const today = new Date();
         const twoWeeks = 14 * 24 * 60 * 60 * 1000;
-
+        
         // Filter campaigns expiring in 2 weeks
         const expiringCampaigns = campaignData.filter(campaign => {
           if (campaign.status !== 'Active') return false;
@@ -56,24 +54,24 @@ jobs:
           emailBody += "No campaigns are expiring soon.";
         }
 
-        // Write email body to a file
+        // Write email body to file
         fs.writeFileSync('email_body.txt', emailBody);
         console.log("Email content generated successfully.");
         EOF
-
         node generate_email.js
 
-    - name: Display Email Body (Debugging)
-      run: cat email_body.txt
+    - name: Set Email Content as Environment Variable
+      run: echo "EMAIL_BODY=$(cat email_body.txt)" >> $GITHUB_ENV
 
-    - name: Send Email Notification
+    - name: Send Email Notification via Outlook
       uses: dawidd6/action-send-mail@v3
       with:
-        server_address: smtp.gmail.com
+        server_address: smtp.office365.com  # Outlook SMTP Server
         server_port: 587
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
+        secure: false  # Use STARTTLS
+        username: ${{ secrets.OUTLOOK_EMAIL }}  # Your Outlook email (e.g., yourname@outlook.com)
+        password: ${{ secrets.OUTLOOK_PASSWORD }}  # App password (not regular Outlook password)
         subject: "Campaign Expiration Reminder"
-        to: "kohch7811@gmail.com"
-        from: "GitHub Actions"
-        body: file://email_body.txt  # <<<< FIX: Read email body directly from the file
+        to: "kohch7811@outlook.com"  # Change to your Outlook email
+        from: "GitHub Actions <${{ secrets.OUTLOOK_EMAIL }}>"
+        body: ${{ env.EMAIL_BODY }}
