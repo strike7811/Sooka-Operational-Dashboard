@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(() => {
             recordForm.reset();
             modal.classList.remove('show');
-            // 添加成功后重新加载页面
+
             window.location.reload();
         })
         .catch(error => {

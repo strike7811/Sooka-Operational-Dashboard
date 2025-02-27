@@ -18,10 +18,10 @@ function createTableRow(data) {
         <td><span class="${setStatusStyle(data.status)}">${data.status}</span></td>
         <td>
             <button class="edit-button" onclick="editRecord('${data.campaignName}')">
-                <img src="edit-button.png" alt="Edit" class="icon" style="width: 20px; height: 20px;">
+                <img src="Images/edit-button.png" alt="Edit" class="icon" style="width: 20px; height: 20px;">
             </button>
             <button class="delete-button" onclick="deleteRecord('${data.campaignName}')">
-                <img src="delete.png" alt="Delete" class="icon" style="width: 20px; height: 20px;">
+                <img src="Images/delete.png" alt="Delete" class="icon" style="width: 20px; height: 20px;">
             </button>
         </td>
     `;
@@ -83,6 +83,27 @@ function editRecord(campaignName) {
 }
 
 function addNewRecord(formData) {
+    let campaigns = JSON.parse(localStorage.getItem('campaigns')) || [];
+    const editingCampaign = document.getElementById('campaignForm').getAttribute('data-editing');
+    
+    if (editingCampaign) {
+        campaigns = campaigns.map(campaign => 
+            campaign.campaignName === editingCampaign ? 
+                {...campaign, ...formData, timestamp: campaign.timestamp} :
+                campaign
+        );
+        document.getElementById('campaignForm').removeAttribute('data-editing');
+        document.querySelector('#campaignForm button[type="submit"]').textContent = 'Add Record';
+    } else {
+        formData.timestamp = Date.now();
+        campaigns.push(formData);
+    }
+
+    localStorage.setItem('campaigns', JSON.stringify(campaigns));
+    updateTableFromStorage();
+    modal.style.display = "none";
+    document.getElementById('campaignForm').reset();
+
     fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
         method: 'GET',
         headers: {
@@ -91,24 +112,7 @@ function addNewRecord(formData) {
     })
     .then(response => response.json())
     .then(data => {
-        let campaigns = JSON.parse(atob(data.content));
-        const editingCampaign = document.getElementById('campaignForm').getAttribute('data-editing');
-        
-        if (editingCampaign) {
-            campaigns = campaigns.map(campaign => 
-                campaign.campaignName === editingCampaign ? 
-                    {...campaign, ...formData, timestamp: campaign.timestamp} :
-                    campaign
-            );
-            document.getElementById('campaignForm').removeAttribute('data-editing');
-            document.querySelector('#campaignForm button[type="submit"]').textContent = 'Add Record';
-        } else {
-            formData.timestamp = Date.now();
-            campaigns.push(formData);
-        }
-
         const updatedContent = btoa(JSON.stringify(campaigns));
-        
         return fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
             method: 'PUT',
             headers: {
@@ -122,12 +126,10 @@ function addNewRecord(formData) {
             })
         });
     })
-    .then(() => {
-        fetchCampaigns();
-        modal.style.display = "none";
-        document.getElementById('campaignForm').reset();
-    })
-    .catch(error => console.error('Error updating campaigns:', error));
+    .catch(error => {
+        console.error('Error updating campaigns:', error);
+        alert('Changes saved locally but failed to sync with GitHub. Please try again later.');
+    });
 }
 
 const modal = document.getElementById('addRecordModal');
@@ -200,7 +202,7 @@ document.getElementById('searchInput').addEventListener('input', function() {
 });
 
 let currentPage = 1;
-const recordsPerPage = 9;
+const recordsPerPage = 8;
 
 function updatePagination() {
     const campaigns = JSON.parse(localStorage.getItem('campaigns')) || [];
@@ -302,24 +304,53 @@ function filterCampaigns() {
 
 function filterRecords() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-    const rows = document.querySelectorAll('#tableBody tr');
-
-    rows.forEach(row => {
-        const campaignName = row.querySelector('td:first-child').textContent.toLowerCase();
-        const matchesSearch = campaignName.includes(searchTerm);
-        const statusFilter = document.getElementById('statusFilter').value;
-        const statusCell = row.querySelector('.status-cell');
-        const statusText = statusCell ? statusCell.textContent.trim() : '';
-
-        if ((statusFilter === 'all' || statusText === statusFilter) && matchesSearch) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
+    const statusFilter = document.getElementById('statusFilter').value;
+    const campaigns = JSON.parse(localStorage.getItem('campaigns')) || [];
+    
+    const filteredCampaigns = campaigns.filter(campaign => {
+        const matchesSearch = campaign.campaignName.toLowerCase().includes(searchTerm);
+        const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter;
+        return matchesSearch && matchesStatus;
     });
+
+    filteredCampaigns.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+    currentPage = 1;
+    const totalPages = Math.ceil(filteredCampaigns.length / recordsPerPage);
+    
+    const tableBody = document.getElementById('tableBody');
+    tableBody.innerHTML = '';
+
+    if (filteredCampaigns.length === 0) {
+        const noRecordsRow = document.createElement('tr');
+        noRecordsRow.innerHTML = '<td colspan="6" style="text-align: center;">No records found</td>';
+        tableBody.appendChild(noRecordsRow);
+    } else {
+        const start = (currentPage - 1) * recordsPerPage;
+        const end = start + recordsPerPage;
+        const paginatedCampaigns = filteredCampaigns.slice(start, end);
+
+        paginatedCampaigns.forEach(campaign => {
+            const row = createTableRow(campaign);
+            tableBody.appendChild(row);
+        });
+    }
+
+    document.getElementById('totalPages').textContent = totalPages || 1;
+    document.getElementById('currentPage').textContent = currentPage;
+    document.getElementById('prevPage').disabled = currentPage === 1;
+    document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
 }
 
 function deleteRecord(campaignName) {
+    let campaigns = JSON.parse(localStorage.getItem('campaigns')) || [];
+    
+    campaigns = campaigns.filter(campaign => campaign.campaignName !== campaignName);
+    
+    localStorage.setItem('campaigns', JSON.stringify(campaigns));
+    
+    updateTableFromStorage();
+
     fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
         method: 'GET',
         headers: {
@@ -328,13 +359,8 @@ function deleteRecord(campaignName) {
     })
     .then(response => response.json())
     .then(data => {
-        let campaigns = data.content ? JSON.parse(atob(data.content)) : [];
-        campaigns = campaigns.filter(campaign => campaign.campaignName !== campaignName);
-        
         const updatedContent = btoa(JSON.stringify(campaigns));
-        const sha = data.sha;
-
-        fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+        return fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `token ${GITHUB_TOKEN}`,
@@ -343,15 +369,14 @@ function deleteRecord(campaignName) {
             body: JSON.stringify({
                 message: 'Delete campaign',
                 content: updatedContent,
-                sha: sha
+                sha: data.sha
             })
-        })
-        .then(() => {
-            fetchCampaigns();
-        })
-        .catch(error => console.error('Error deleting campaign:', error));
+        });
     })
-    .catch(error => console.error('Error fetching campaigns:', error));
+    .catch(error => {
+        console.error('Error deleting campaign:', error);
+        alert('Record deleted locally but failed to sync with GitHub. Please refresh the page.');
+    });
 }
 
 function downloadCSV() {

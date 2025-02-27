@@ -675,5 +675,21 @@ h2 {
 
 .current-page {
     font-weight: bold;
-    color: #333;
+    color: #666;
+}
+
+.dark-mode .add-button {
+    background: #0284c7;
+}
+
+.dark-mode .add-button:hover {
+    background: #43a047;
+}
+
+.dark-mode .page-info {
+    color: #999;
+}
+
+.dark-mode .current-page {
+    color: #999;
 }

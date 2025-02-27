@@ -20,15 +20,15 @@
                         <span class="toggle-btn" onclick="toggleNav()">☰</span>
                     </div>
                     <div class="logo-title">
-                        <img src="sooka.png" alt="Sooka Logo">
+                        <img src="Images/sooka.png" alt="Sooka Logo">
                         <h1>Sooka Operation Dashboard</h1>
                     </div>
                     <div class="header-controls">
                         <div class="dark-mode-button" onclick="darkMode()">
-                            <img id="mode-icon" src="night-mode.png" alt="Night Mode">
+                            <img id="mode-icon" src="Images/night-mode.png" alt="Night Mode">
                         </div>
                         <div class="notification-button">
-                            <img id="bell-icon" src="bell.png" alt="Notification">
+                            <img id="bell-icon" src="Images/bell.png" alt="Notification">
                             <div id="notification-panel" class="notification-panel" style="display: none;">
                                 <div class="notification-header">
                                     <h4>Events</h4>
@@ -38,7 +38,7 @@
                             </div>
                         </div>
                         <a href="setting.html" class="settings-button">
-                            <img id="settings-icon" src="settings.png" alt="Settings">
+                            <img id="settings-icon" src="Images/settings.png" alt="Settings">
                         </a>
                     </div>
                 </div>
@@ -67,7 +67,7 @@
                     <h3>Total Requests</h3>
                 </div>
                 <div class="icon">
-                    <img src="document.png" alt="Total">
+                    <img src="Images/document.png" alt="Total">
                 </div>
             </div>
             <div class="status-box pending">
@@ -76,7 +76,7 @@
                     <h3>Pending</h3>
                 </div>
                 <div class="icon">
-                    <img src="pending.png" alt="Pending">
+                    <img src="Images/pending.png" alt="Pending">
                 </div>
             </div>
             <div class="status-box completed">
@@ -85,7 +85,7 @@
                     <h3>Completed</h3>
                 </div>
                 <div class="icon">
-                    <img src="completed.png" alt="Completed">
+                    <img src="Images/completed.png" alt="Completed">
                 </div>
             </div>
             <div class="status-box rejected">
@@ -94,7 +94,7 @@
                     <h3>Rejected</h3>
                 </div>
                 <div class="icon">
-                    <img src="rejected.png" alt="Rejected">
+                    <img src="Images/rejected.png" alt="Rejected">
                 </div>
             </div>
         </div>
@@ -104,30 +104,30 @@
                 <div class="search-bar">
                     <input type="text" placeholder="Search by Customer Name or Email">
                     <button type="button">
-                        <img src="search.png" alt="Search">
+                        <img src="Images/search.png" alt="Search">
                     </button>
                 </div>
                 <div class="status-filter">
                     <select>
                         <option value="">All Status</option>
-                        <option value="pending">Pending</option>
                         <option value="completed">Completed</option>
+                        <option value="pending">Pending</option>
                         <option value="rejected">Rejected</option>
                     </select>
                 </div>
             </div>
             <div class="pagination-controls">
                 <button class="page-btn prev-btn" disabled>
-                    <img src="left.png" alt="Previous">
+                    <img src="Images/left.png" alt="Previous">
                 </button>
                 <span class="page-info">Page <span class="current-page">1</span></span>
                 <button class="page-btn next-btn" disabled>
-                    <img src="next.png" alt="Next">
+                    <img src="Images/next.png" alt="Next">
                 </button>
             </div>
             <div class="add-record">
                 <button type="button" class="add-button">
-                    <img src="add.png" alt="Add">
+                    <img src="Images/add.png" alt="Add">
                     Add New Record
                 </button>
             </div>
@@ -144,11 +144,11 @@
                 <form id="recordForm">
                     <div class="form-group half">
                         <label for="customerName">Customer Name</label>
-                        <input type="text" id="customerName" required>
+                        <input type="text" id="customerName" required autocomplete="off">
                     </div>
                     <div class="form-group half">
                         <label for="customerEmail">Email</label>
-                        <input type="email" id="customerEmail" required>
+                        <input type="email" id="customerEmail" required autocomplete="off">
                     </div>
                     <div class="form-group half">
                         <label for="issueDate">Date</label>
@@ -172,7 +172,7 @@
                     </div>
                     <div class="form-group half">
                         <label for="zendesk">Zendesk Ticket ID</label>
-                        <input type="text" id="zendesk-ticket" required>
+                        <input type="text" id="zendesk-ticket" required autocomplete="off">
                     </div>
                     <div class="form-actions">
                         <button type="button" class="cancel-btn">Cancel</button>
