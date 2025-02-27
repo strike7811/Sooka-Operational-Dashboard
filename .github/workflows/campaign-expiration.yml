@@ -22,7 +22,7 @@ jobs:
       run: |
         echo "Generating email content..."
         
-        # Write the JavaScript file correctly
+        # Write the JavaScript file
         cat > generate_email.js << 'EOF'
         const fs = require('fs');
 
@@ -58,20 +58,12 @@ jobs:
           emailBody += "No campaigns are expiring soon.";
         }
 
-        // Write email body to file
+        // Write email body to a file
         fs.writeFileSync('email_body.txt', emailBody);
-
-        // Store email body as an environment variable for later steps
-        console.log("EMAIL_BODY<<EOF");
-        console.log(emailBody);
-        console.log("EOF");
         EOF
 
-        # Run the script to generate the email content
+        # Run the script to generate email content
         node generate_email.js
-
-        # Store email content in an environment variable
-        echo "EMAIL_BODY=$(cat email_body.txt)" >> $GITHUB_ENV
 
     - name: Send Email Notification
       uses: dawidd6/action-send-mail@v3
@@ -81,6 +73,6 @@ jobs:
         username: ${{ secrets.EMAIL_USERNAME }}
         password: ${{ secrets.EMAIL_PASSWORD }}
         subject: "Campaign Expiration Reminder"
-        body: ${{ env.EMAIL_BODY }}
+        body: ${{ join(fromJSON('[""]') + fromJSON('[github.workspace]/email_body.txt'), '') }}
         to: "kohch7811@gmail.com"
         from: "GitHub Actions"
