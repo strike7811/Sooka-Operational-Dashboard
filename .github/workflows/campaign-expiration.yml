@@ -55,15 +55,19 @@ jobs:
           emailBody += "No campaigns are expiring soon.";
         }
 
-        // Write email body to a GitHub Actions environment variable
-        console.log("EMAIL_BODY<<EOF");
-        console.log(emailBody);
-        console.log("EOF");
+        // Write email body to file
+        fs.writeFileSync('email_body.txt', emailBody);
         EOF
 
-        # Run the script and set the output variable
-        node generate_email.js | tee email_body.txt
-        echo "EMAIL_BODY=$(cat email_body.txt)" >> $GITHUB_ENV
+        # Run the script to generate the email content
+        node generate_email.js
+
+        # Set environment variable properly
+        {
+          echo "EMAIL_BODY<<EOF"
+          cat email_body.txt
+          echo "EOF"
+        } >> "$GITHUB_ENV"
 
     - name: Send Email Notification
       uses: dawidd6/action-send-mail@v3
