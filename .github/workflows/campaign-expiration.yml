@@ -64,14 +64,5 @@ jobs:
         # Run the script to generate email content
         node generate_email.js
 
-    - name: Send Email Notification
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 587
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "Campaign Expiration Reminder"
-        body_file: "email_body.txt"
-        to: "kohch7811@gmail.com"
-        from: "GitHub Actions"
+        # Store the email body in an environment variable
+        echo "EMAIL_B
