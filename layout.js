@@ -25,7 +25,7 @@ function initializePage() {
         document.body.classList.add('dark-mode');
         const modeIcon = document.getElementById('mode-icon');
         if (modeIcon) {
-            modeIcon.src = 'Images/bright-mode.png';
+            modeIcon.src = 'bright-mode.png';
         }
     }
 }
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.classList.add('dark-mode');
         const modeIcon = document.getElementById('mode-icon');
         if (modeIcon) {
-            modeIcon.src = 'Images/bright-mode.png';
+            modeIcon.src = 'bright-mode.png';
         }
     }
 });
@@ -51,12 +51,12 @@ function darkMode() {
     if (body.classList.contains('dark-mode')) {
         localStorage.setItem('darkMode', 'enabled');
         if (modeIcon) {
-            modeIcon.src = 'Images/bright-mode.png';
+            modeIcon.src = 'bright-mode.png';
         }
     } else {
         localStorage.setItem('darkMode', 'disabled');
         if (modeIcon) {
-            modeIcon.src = 'Images/night-mode.png';
+            modeIcon.src = 'night-mode.png';
         }
     }
 }
