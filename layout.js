@@ -25,7 +25,7 @@ function initializePage() {
         document.body.classList.add('dark-mode');
         const modeIcon = document.getElementById('mode-icon');
         if (modeIcon) {
-            modeIcon.src = 'bright-mode.png';
+            modeIcon.src = 'Images/bright-mode.png';
         }
     }
 }
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.classList.add('dark-mode');
         const modeIcon = document.getElementById('mode-icon');
         if (modeIcon) {
-            modeIcon.src = 'bright-mode.png';
+            modeIcon.src = 'Images/bright-mode.png';
         }
     }
 });
@@ -51,12 +51,12 @@ function darkMode() {
     if (body.classList.contains('dark-mode')) {
         localStorage.setItem('darkMode', 'enabled');
         if (modeIcon) {
-            modeIcon.src = 'bright-mode.png';
+            modeIcon.src = 'Images/bright-mode.png';
         }
     } else {
         localStorage.setItem('darkMode', 'disabled');
         if (modeIcon) {
-            modeIcon.src = 'night-mode.png';
+            modeIcon.src = 'Images/night-mode.png';
         }
     }
 }
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', initializePage);
 
 window.initializePage = initializePage;
 const GITHUB_TOKEN = '';
-const REPO_OWNER = 'strike7811';
+const REPO_OWNER = '';
 const REPO_NAME = 'Sooka-Operational-Dashboard';
 const FILE_PATH = 'campaign.json';
 
@@ -153,7 +153,7 @@ function checkAndUpdateStatus() {
         campaigns = campaigns.map(campaign => {
             const endDate = new Date(campaign.endDate);
             if (endDate < today && campaign.status === 'Active') {
-                campaign.status = 'Completed';
+                campaign.status = 'Expired';
                 statusUpdated = true;
             }
             return campaign;
@@ -169,7 +169,7 @@ function checkAndUpdateStatus() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    message: 'Update campaign statuses',
+                    message: 'Auto update expired campaign statuses',
                     content: updatedContent,
                     sha: data.sha
                 })
@@ -210,7 +210,7 @@ function getStatusClass(status) {
     const statusClasses = {
         'Active': 'status-active',
         'Inactive': 'status-inactive',
-        'Completed': 'status-completed'
+        'Expired': 'status-expired'
     };
     return statusClasses[status] || '';
 }
