@@ -1,40 +1,22 @@
-name: Campaign Expiration Email Notification
-
-on:
-  schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch:
-
-jobs:
-  check-campaigns:
-    runs-on: ubuntu-latest
-    steps:
-
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'
-
     - name: Generate Email Body
       run: |
         echo "Generating email content..."
         cat << 'EOF' > generate_email.js
         const fs = require('fs');
-        // Read campaign data
         const campaignData = JSON.parse(fs.readFileSync('campaign.json', 'utf8'));
         const today = new Date();
         const twoWeeks = 14 * 24 * 60 * 60 * 1000;
-        // Filter campaigns expiring in 2 weeks
+
         const expiringCampaigns = campaignData.filter(campaign => {
           if (campaign.status !== 'Active') return false;
           const endDate = new Date(campaign.endDate);
           return endDate.getTime() - today.getTime() <= twoWeeks && endDate.getTime() > today.getTime();
         });
+
         let emailBody = "Campaign Expiration Reminder\n\n";
-        if (expiringCampaigns.length > 0) {
+        let shouldSend = expiringCampaigns.length > 0;
+
+        if (shouldSend) {
           emailBody += "The following campaigns are about to expire. Please take action:\n\n";
           emailBody += "------------------------------------------------\n";
           emailBody += "End Date       | Campaign Name\n";
@@ -48,24 +30,30 @@ jobs:
           emailBody += `GitHub Repository: https://github.com/${process.env.GITHUB_REPOSITORY}\n\n`;
           emailBody += "This is an automated notification from GitHub Actions. Please do not reply.";
         } else {
-          emailBody += "No campaigns are expiring soon.";
+          console.log("No campaigns are expiring soon. Skipping email...");
         }
-        // Write email body to a file
+
         fs.writeFileSync('email_body.txt', emailBody);
+        fs.writeFileSync('email_should_send.txt', shouldSend ? "true" : "false");
         console.log("Email content generated successfully.");
         EOF
         node generate_email.js
-    - name: Display Email Body (Debugging)
+
+    - name: Read Email Send Flag
+      run: echo "EMAIL_SHOULD_SEND=$(cat email_should_send.txt)" >> $GITHUB_ENV
+
+    - name: Debug Email Content
       run: cat email_body.txt
 
-    - name: Send Email Notification
+    - name: Send Email Notification (Only If Needed)
+      if: env.EMAIL_SHOULD_SEND == 'true'
       uses: dawidd6/action-send-mail@v3
       with:
         server_address: smtp.gmail.com
         server_port: 587
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
+        username: ${{ secrets.GMAIL_USER }}
+        password: ${{ secrets.GMAIL_APP_PASSWORD }}
         subject: "Campaign Expiration Reminder"
         to: "CHKCHERN@astro.com.my"
-        from: "GitHub Actions"
-        body: file://email_body.txt
+        from: "GitHub Actions <${{ secrets.GMAIL_USER }}>"
+        body: ${{ env.EMAIL_BODY }}
